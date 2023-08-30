@@ -23,29 +23,33 @@ const Gallery = () => {
       console.log('Error selecting image: ', error);
     }
   };
-
   const renderImages = () => {
     const rows = [];
-    for (let i = 0; i < selectedImages.length; i += 2) {
+    for (let i = 0; i < selectedImages.length; i += 3) {
       const firstImage = selectedImages[i];
       const secondImage = selectedImages[i + 1];
-      if (i % 4 === 0) {
+      const thirdImage = selectedImages[i + 2];
+  
+      rows.push(
+        <View style={styles.imageRow} key={i}>
+          <Image source={{ uri: firstImage }} style={styles.image} />
+          {secondImage && <Image source={{ uri: secondImage }} style={styles.image} />}
+        </View>
+      );
+  
+      if (thirdImage) {
         rows.push(
-          <View style={styles.imageRow} key={i}>
-            <Image source={{ uri: firstImage }} style={styles.image} />
-            {secondImage && <Image source={{ uri: secondImage }} style={styles.image} />}
-          </View>
-        );
-      } else {
-        rows.push(
-          <View style={styles.singleImageRow} key={i}>
-            <Image source={{ uri: firstImage }} style={styles.image1} />
+          <View style={styles.singleImageRow} key={i + 1}>
+            <Image source={{ uri: thirdImage }} style={styles.image1} />
           </View>
         );
       }
     }
     return rows;
   };
+  
+  
+  
 
   return (
     <View>

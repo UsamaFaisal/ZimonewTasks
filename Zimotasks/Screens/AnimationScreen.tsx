@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Animated } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Animated, FlatList, Dimensions } from 'react-native';
 import axios from 'react-native-axios';
-import { PanGestureHandler } from 'react-native-gesture-handler';
 import { connect } from 'react-redux';
 import { fetchMoviesSuccess } from '../action/moviesActions';
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const AnimationScreen = ({ movies, fetchMoviesSuccess }) => {
-  const translateY = new Animated.Value(0);
+  
+  const MARGIN = 50;
+  const BOXHEIGHT=60;
+  const HEIGHT=BOXHEIGHT+MARGIN*2;
+  const {height:wheight} =Dimensions.get("window");
+  const height=wheight-64;
+
 
   useEffect(() => {
     const url = 'https://reactnative.dev/movies.json';
@@ -19,49 +25,91 @@ const AnimationScreen = ({ movies, fetchMoviesSuccess }) => {
       });
   }, [fetchMoviesSuccess]);
 
-  const gestureHandler = Animated.event(
-    [{ nativeEvent: { translationY: translateY } }],
-    { useNativeDriver: false }
-  );
 
-  const animatedStyle = {
-    transform: [{ translateY }],
-  };
 
-  const renderMovies = () => {
+  const backgroundColors = [
+    '#d44c9c',
+    '#ff99da',
+    '#ff99da',
+    '#d44c9c',
+  ];
+  
+  const renderLoader = () => {
     if (!movies || !movies.movies) {
-      return null;
-    }
-    
-    return movies.movies.map((movie, index) => {
-      const opacity = translateY.interpolate({
-        inputRange: [-index * 100, 0],
-        outputRange: [0.5, 1],
-        extrapolate: 'identity',
-      });
       return (
-        <Animated.View
-          key={movie.id}
-          style={[styles.movieBox, { opacity }]}
-        >
-          <Text style={styles.movieTitle}>Title: {movie.title}</Text>
-          <Text style={styles.movieReleaseYear}>Release Year: {movie.releaseYear}</Text>
-        </Animated.View>
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" />
+        </View>
       );
-    });
+    }
+    return null;
   };
-
+  const y = new Animated.Value(0);
+  const onScroll = Animated.event([{ nativeEvent: { contentOffset: { y } } }], {
+    useNativeDriver: true,
+  });
+  
   return (
     <View style={styles.container}>
-      {movies ? (
-        <PanGestureHandler onGestureEvent={gestureHandler}>
-          <Animated.View style={[styles.movieContainer, animatedStyle]}>
-            {renderMovies()}
-          </Animated.View>
-        </PanGestureHandler>
-      ) : (
-        <ActivityIndicator size="large" />
-      )}
+      {renderLoader()}
+      <AnimatedFlatList
+         scrollEventThrottle={16}
+         bounces={false}
+        data={movies.movies}
+        keyExtractor={(item) => item.id.toString()}
+        {...{ onScroll }}
+        renderItem={({ item, index }) => {
+          const position =Animated.subtract(index*HEIGHT,y);
+          const isDisappearing=-HEIGHT;
+          const isTop=0;
+          const isBottom=height-HEIGHT;
+          const isAppearing=height;
+          const translateY= Animated.add(
+            y,
+            y.interpolate({
+              inputRange:[0,0.0001+index*HEIGHT],
+              outputRange:[0,-index*HEIGHT],
+              extrapolateRight:'clamp',
+            })
+          );
+            const scale=position.interpolate({
+              inputRange:[isDisappearing,isTop,isBottom,isAppearing],
+              outputRange:[0.5,1,1,0.5],
+              extrapolate:'clamp',
+
+            });
+            const opacity=position.interpolate({
+              inputRange:[isDisappearing,isTop,isBottom,isAppearing],
+              outputRange:[0,1,1,0],
+            });
+            const backgroundColor =position.interpolate({
+              inputRange:[isDisappearing,isTop,isBottom,isAppearing],
+              outputRange:backgroundColors,
+            });
+          return (
+            <Animated.View
+              style={{
+                borderRadius: 15,
+                borderWidth: 1,
+                marginRight: 50,
+                marginLeft: 50,
+                alignItems: 'center',
+                borderColor: '#000',
+                marginTop: 5,
+                marginBottom: 15,
+                padding: 50,
+                backgroundColor,
+                opacity,
+                transform: [{ translateY },{scale}],
+                
+              }}
+            >
+              <Text style={styles.movieTitle}>Title: {item.title}</Text>
+              <Text style={styles.movieReleaseYear}>Release Year: {item.releaseYear}</Text>
+            </Animated.View>
+          );
+        }}
+      />
     </View>
   );
 };
@@ -70,6 +118,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'pink',
+  },
+  loaderContainer: {
+    flex: 1,
+    // position:'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   movieContainer: {
     flex: 1,

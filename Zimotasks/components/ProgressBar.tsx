@@ -7,7 +7,7 @@ const ProgressBar: React.FC<any> = () => {
   return (
     <View style={styles.progressBarContainer}>
     <View >
-      <Image source={require('../assets/pr.png')} />
+      <Image style={styles.pb} source={require('../assets/pb.png')} />
     </View>
     <Text style={styles.textBelow}>{`${normalizedProgress}%`}</Text>
   </View>
@@ -36,6 +36,10 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         backgroundColor: '#007AFF', // Inner square color (progress color)
+      },
+      pb:{
+        height:40,
+        width:40,
       },
       textBelow: {
         // marginTop: 5,

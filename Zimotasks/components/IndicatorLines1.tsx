@@ -12,9 +12,8 @@ const IndicatorLines: React.FC = () => {
       </View>
       </View>
       <View style={styles.indicatorLinesContainer}>
-        <View style={styles.line1} />
         <View style={styles.line} />
-        
+        <View style={styles.line1} />
       </View>
     </View>
   );

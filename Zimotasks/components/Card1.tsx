@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet,ImageBackground,Text } from 'react-native';
 import Timer from './Timer';
 import ProgressBar from './ProgressBar';
-import IndicatorLines from './IndicatorLines';
+import IndicatorLines from './IndicatorLines1';
 import BuyNowButton from './BuyNowButton';
 
 const Card: React.FC<any> = () => {

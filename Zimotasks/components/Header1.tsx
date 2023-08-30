@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
   logoIcon: {
     width: 80,
     height: 40,
+    marginLeft:40,
   },
   iconImage: {
     width: 34,

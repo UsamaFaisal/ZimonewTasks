@@ -68,9 +68,9 @@ const styles = StyleSheet.create({
   },
   timertext: {
     color: '#fff',
+    fontFamily: 'Times New Roman',
     fontSize: 55,
     margin:5,
-    fontWeight: 'bold',
   },
   timertext1: {
     color: '#fff',

@@ -2,12 +2,13 @@ import React, { useRef, useState,useEffect } from 'react';
 import { View, Text, StyleSheet, Linking, Image, TouchableOpacity} from 'react-native';
 import { RNCamera, BarCodeReadEvent } from 'react-native-camera';
 import { useNavigation } from '@react-navigation/native';
+import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 
 const ScannerScreen = () => {
   const cameraRef = useRef<RNCamera | null>(null);
   const navigation = useNavigation();
   const [isFlashlightOn, setIsFlashlightOn] = useState(false); // State for flashlight toggle
-  const [isImageVisible, setIsImageVisible] = useState(true); 
+  const [isImageVisible, setIsImageVisible] = useState(true);  
   useEffect(() => {
     const intervalId = setInterval(() => {
       setIsImageVisible((prev) => !prev);
@@ -43,8 +44,22 @@ const ScannerScreen = () => {
       }
     }
   };
+  const [lastZoom,setlastZoom]=useState(0);
 
+  const handleZoom = (event) => {
+    const currentZoom = event.nativeEvent.scale;
+    if (event.nativeEvent.state === State.ACTIVE) {
+      const newZoomLevel = lastZoom + (currentZoom-1);
+      if (newZoomLevel >= 0 && newZoomLevel <= 1) {
+        if (cameraRef.current) {
+          cameraRef.current.zoom = newZoomLevel; 
+          setlastZoom(newZoomLevel);
+        }
+      }
+    }
+  };
   return (
+    <PinchGestureHandler onGestureEvent={handleZoom}> 
     <View style={styles.container}>     
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -56,23 +71,29 @@ const ScannerScreen = () => {
           <Image source={require('../assets/flag.png')} style={styles.iconImage} />
         </View>
       </View>
+      
       <RNCamera
         ref={cameraRef}
         style={styles.camera}
         onBarCodeRead={barcodeRecognized}
         flashMode={isFlashlightOn ? RNCamera.Constants.FlashMode.torch : RNCamera.Constants.FlashMode.off}
+        zoom={lastZoom}
       />
       {isImageVisible && (
       <Image
-        source={require('../assets/blink.png')} // Use your transparent image
+        source={require('../assets/arr.png')} // Use your transparent image
         style={styles.overlayImage}
       />)}
       <View style={styles.footer}>      
         <TouchableOpacity>
-          <Text style={styles.buttonText}>Scan QR Code</Text>
+          <View>
+          <Text style={styles.smalltxt}>Scan</Text>
+          <Text style={styles.largetxt}>QR</Text>
+          <Text style={styles.smalltxt}>Code</Text>
+          </View>
         </TouchableOpacity>
         <TouchableOpacity>
-          <Text style={styles.buttonText}>History Text</Text>
+          <Text style={styles.buttonText1}>History</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={toggleFlashlight}>
           <Image
@@ -83,6 +104,7 @@ const ScannerScreen = () => {
       </View>
       
     </View>
+    </PinchGestureHandler>
   );
 };
 const styles = StyleSheet.create({
@@ -93,11 +115,11 @@ const styles = StyleSheet.create({
   },
   overlayImage: {
     position: 'absolute',
-    top: '30%', // Adjust the position as needed
-    alignSelf: 'center',
-    width: 300, // Adjust the size as needed
-    height: 250,
-    opacity: 0.5, // Adjust the opacity as needed
+    top: '10%', // Adjust the position as needed
+    // alignSelf: 'center',
+    // width: 700, // Adjust the size as needed
+    // height: 700,
+    opacity: 1, // Adjust the opacity as needed
   },
   camera: {
     flex: 1,
@@ -106,11 +128,14 @@ const styles = StyleSheet.create({
   txt: {
     color: 'white',
     justifyContent: 'center',
+    paddingRight:3,
+    fontSize:10,
     alignContent: 'center',
     alignSelf: 'center',
   },
   in: {
     flexDirection: 'row',
+    alignItems:'center',
   },
   middleImage: {
     width: 200, 
@@ -119,13 +144,26 @@ const styles = StyleSheet.create({
     // color:'rgba(255, 255, 255, 0.5)',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
+  smalltxt:{
+    fontSize:8,
+    color:'white',
+    marginLeft:5,
+  },
+  largetxt:{
+   color:'white',
+   fontSize:14,
+   alignItems:'center',
+   marginLeft:5,
+  },
   iconImage: {
-    width: 34,
-    height: 34,
+    width: 22,
+    height: 22,
   },
   iconImage1: {
     width: 90,
-    height: 34,
+    height: 28,
+    paddingLeft:10,
+    marginLeft:67,
   },
   header: {
     position: 'absolute',
@@ -152,9 +190,16 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     tintColor: 'white',
+    paddingRight:20,
+    marginRight:7,
   },
   buttonText: {
     color: 'white',
+  },
+  buttonText1:{
+    color:'white',
+    // paddingRight:10,
+    paddingLeft:10,
   },
 });
 
